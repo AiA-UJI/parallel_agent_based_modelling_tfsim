@@ -1,33 +1,33 @@
 # parallel_agent_based_modelling_tfsim
 
-Código del artículo **"Parallel Agent-Based Modeling for Improving Traffic Flow Simulation"** (V. R. Tomás, M. Castillo, I. Monzón Catalán, L. A. García — Universitat Jaume I).
+Code for the paper **"Parallel Agent-Based Modeling for Improving Traffic Flow Simulation"** (V. R. Tomás, M. Castillo, I. Monzón Catalán, L. A. García — Universitat Jaume I).
 
-## Resumen
+## Summary
 
-El trabajo aborda la paralelización a nivel de tareas de simulaciones SUMO (Simulation of Urban MObility) para reducir tiempos de ejecución sin modificar el motor de SUMO. El framework reparte el cálculo por vehículo y por segmento (emisiones, rutas dinámicas, estado de agentes) entre varios procesos, obteniendo speedups de hasta ~4× en corredores interurbanos y redes de autopista reales.
+This work addresses task-level parallelization of SUMO (Simulation of Urban MObility) simulations to reduce runtime without modifying the SUMO engine. The framework distributes vehicle- and segment-level computation (emissions, dynamic routing, agent state) across multiple processes, achieving speedups of up to ~4× on real-world interurban corridors and highway networks.
 
-## Contenido del repositorio
+## Repository contents
 
-- **`hgv.py`** — Utilidad para cargar y procesar datos DATEX2 (XML/gzip) de tráfico/velocidad.
-- **`parallel_sumo_simulation/`** — Framework de simulación paralela:
-  - Módulos: emisiones (HBEFA), routing (Dijkstra/A*, SUMO), simulador TraCI con workers.
-  - Scripts: ejecución de simulaciones, generación de demanda, benchmarks y análisis de resultados.
+- **`hgv.py`** — Utility to load and process DATEX2 (XML/gzip) traffic/speed data.
+- **`parallel_sumo_simulation/`** — Parallel simulation framework:
+  - Modules: emissions (HBEFA), routing (Dijkstra/A*, SUMO), TraCI simulator with workers.
+  - Scripts: run simulations, generate demand, run benchmarks, and analyze results.
 
-Solo se versiona código Python de este paquete y `hgv.py`; el artículo, datos y entornos virtuales quedan fuera (véase `.gitignore`).
+Only Python code from this package and `hgv.py` is versioned; the paper, data, and virtual environments are excluded (see `.gitignore`).
 
-## Requisitos
+## Requirements
 
 - Python 3.9+
-- SUMO con TraCI y `SUMO_HOME` configurado.
+- SUMO with TraCI and `SUMO_HOME` set.
 
-## Uso rápido
+## Quick start
 
-Desde la raíz del repo:
+From the repository root:
 
 ```bash
 cd parallel_sumo_simulation
-python scripts/run_simulation.py --network <red> --processes 4
+python scripts/run_simulation.py --network <network> --processes 4
 python scripts/benchmark.py --mode quick
 ```
 
-Ver documentación detallada en `parallel_sumo_simulation/README.md` si está incluida en el árbol que hayas clonado.
+See `parallel_sumo_simulation/README.md` for detailed documentation when available in your clone.

@@ -1,8 +1,8 @@
 # Parallel SUMO Simulation Framework
 
-Framework para ejecutar simulaciones de tráfico SUMO con cálculo paralelo de **emisiones** e **itinerarios**, permitiendo obtener speedup significativo en sistemas multicore.
+Framework for running SUMO traffic simulations with parallel **emissions** and **routing** computation, enabling significant speedup on multicore systems.
 
-## Arquitectura
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -30,123 +30,123 @@ Framework para ejecutar simulaciones de tráfico SUMO con cálculo paralelo de *
                     └──────────────────────────────────────────────────────┘
 ```
 
-## Componentes Principales
+## Main components
 
-### 1. Módulo de Emisiones (`modules/emissions.py`)
-- **EmissionCalculator**: Calcula emisiones por vehículo basado en modelo HBEFA
-- **ParallelEmissionProcessor**: Procesa lotes de estados de vehículos en paralelo
-- Pollutantes: CO2, CO, HC, NOx, PMx, consumo de combustible
+### 1. Emissions module (`modules/emissions.py`)
+- **EmissionCalculator**: Computes per-vehicle emissions using the HBEFA model
+- **ParallelEmissionProcessor**: Processes batches of vehicle states in parallel
+- Pollutants: CO2, CO, HC, NOx, PMx, fuel consumption
 
-### 2. Módulo de Rutas (`modules/routing.py` y `modules/sumo_routing.py`)
-- **RouteCalculator**: Algoritmos Dijkstra y A*
-- **SUMORouter**: Usa datos completos del `.net.xml` de SUMO
-- **ParallelRouteProcessor**: Cálculo paralelo de rutas
-- **DynamicRerouter**: Re-enrutamiento dinámico basado en congestión
+### 2. Routing module (`modules/routing.py` and `modules/sumo_routing.py`)
+- **RouteCalculator**: Dijkstra and A* algorithms
+- **SUMORouter**: Uses full data from SUMO `.net.xml`
+- **ParallelRouteProcessor**: Parallel route computation
+- **DynamicRerouter**: Dynamic rerouting based on congestion
 
-### 3. Simulador Principal (`modules/simulation.py`)
-- **ParallelSUMOSimulator**: Integra TraCI con procesamiento paralelo
-- Soporte para procesamiento asíncrono
-- Manejo de accidentes y eventos
+### 3. Main simulator (`modules/simulation.py`)
+- **ParallelSUMOSimulator**: Integrates TraCI with parallel processing
+- Asynchronous processing support
+- Accident and event handling
 
-## Sobre el Cálculo de Rutas con `.net.xml`
+## Routing with `.net.xml`
 
-### ¿Qué información usa?
+### What data is used?
 
-El archivo `.net.xml` de SUMO contiene:
+The SUMO `.net.xml` file contains:
 
-| Dato | Disponible | Uso en Routing |
-|------|------------|----------------|
-| Topología (edges, nodes) | ✅ | Grafo de la red |
-| Longitud de edges | ✅ | Costo por distancia |
-| Velocidad límite | ✅ | Tiempo de flujo libre |
-| Conexiones (giros) | ✅ | Restricciones de camino |
-| Semáforos | ✅ | (Solo programas, no estado) |
-| Tráfico actual | ❌ | Requiere TraCI |
+| Data | Available | Use in routing |
+|------|-----------|----------------|
+| Topology (edges, nodes) | Yes | Network graph |
+| Edge length | Yes | Distance cost |
+| Speed limit | Yes | Free-flow time |
+| Connections (turns) | Yes | Path constraints |
+| Traffic lights | Yes | (Programs only, not state) |
+| Current traffic | No | Requires TraCI |
 
-### Estrategia de Routing
+### Routing strategy
 
-1. **Inicial**: Tiempos de flujo libre (`tiempo = longitud / velocidad_limite`)
-2. **Durante simulación**: Actualización desde TraCI con `edge.getTraveltime()`
-3. **Suavizado temporal**: Media ponderada de últimos N valores
+1. **Initial**: Free-flow times (`time = length / speed_limit`)
+2. **During simulation**: Update from TraCI with `edge.getTraveltime()`
+3. **Temporal smoothing**: Weighted average of last N values
 
-### Calidad de los Resultados
+### Result quality
 
-| Escenario | Precisión | Notas |
-|-----------|-----------|-------|
-| Red sin congestión | ⭐⭐⭐⭐⭐ | Excelente |
-| Congestión ligera | ⭐⭐⭐⭐ | Buena con actualizaciones TraCI |
-| Congestión severa | ⭐⭐⭐ | Requiere re-enrutamiento frecuente |
-| Con accidentes | ⭐⭐⭐ | Depende de velocidad de detección |
+| Scenario | Precision | Notes |
+|----------|------------|-------|
+| Uncongested network | Excellent | Best case |
+| Light congestion | Good | With TraCI updates |
+| Severe congestion | Fair | Requires frequent rerouting |
+| With accidents | Fair | Depends on detection speed |
 
-### Opciones de Routing
+### Routing options
 
 ```python
-# Opción 1: Router interno (rápido, paralelo)
+# Option 1: Internal router (fast, parallel)
 router = SUMORouter(network_parser)
 route, cost = router.find_route_astar(from_edge, to_edge)
 
-# Opción 2: DUAROUTER de SUMO (más preciso, más lento)
+# Option 2: SUMO DUAROUTER (more accurate, slower)
 route, cost = router.find_route_duarouter(from_edge, to_edge)
 
-# Opción 3: Routing paralelo con actualización TraCI
+# Option 3: Parallel routing with TraCI update
 parallel_router = ParallelSUMORouter(network_parser, num_processes=4)
 updater = TraCIRouteUpdater(network_parser)
 
-# Durante simulación:
+# During simulation:
 updater.update_from_traci(traci_connection, current_time)
 routes = parallel_router.calculate_batch(od_pairs)
 ```
 
-## Instalación
+## Installation
 
-### Requisitos
+### Requirements
 - Python 3.9+
-- SUMO 1.14+ con TraCI
-- Variable de entorno `SUMO_HOME`
+- SUMO 1.14+ with TraCI
+- Environment variable `SUMO_HOME`
 
-### Instalación
+### Install
 
 ```bash
 cd parallel_sumo_simulation
 
-# Crear entorno virtual
+# Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# o: venv\Scripts\activate  # Windows
+# or: venv\Scripts\activate  # Windows
 
-# Instalar dependencias
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-## Uso
+## Usage
 
-### 1. Crear Red de Prueba
+### 1. Create test network
 
 ```bash
-# Crear archivos de definición de red
+# Create network definition files
 python scripts/run_simulation.py --create-network test_grid
 
-# Generar red con netconvert (SUMO)
+# Build network with netconvert (SUMO)
 cd networks/test_grid
 netconvert -n test_grid.nod.xml -e test_grid.edg.xml -o test_grid.net.xml
 ```
 
-### 2. Generar Demanda de Tráfico
+### 2. Generate traffic demand
 
 ```bash
 python scripts/generate_demand.py --network test_grid --level all --time 3600
 ```
 
-### 3. Ejecutar Simulación
+### 3. Run simulation
 
 ```bash
-# Simulación básica
+# Basic simulation
 python scripts/run_simulation.py --network test_grid --processes 4 --traffic medium
 
-# Con accidentes
+# With accidents
 python scripts/run_simulation.py --network test_grid --processes 8 --accidents 1
 
-# Con más opciones
+# With more options
 python scripts/run_simulation.py \
     --network test_grid \
     --processes 8 \
@@ -155,50 +155,50 @@ python scripts/run_simulation.py \
     --accidents 1
 ```
 
-### 4. Ejecutar Benchmark
+### 4. Run benchmark
 
 ```bash
-# Benchmark simulado (sin SUMO real)
+# Simulated benchmark (no real SUMO)
 python scripts/benchmark.py --mode simulated
 
-# Benchmark rápido
-python scripts/benchmark.py --mode quick --machine "Mi Máquina"
+# Quick benchmark
+python scripts/benchmark.py --mode quick --machine "My Machine"
 
-# Benchmark completo
+# Full benchmark
 python scripts/benchmark.py --mode full --machine "HPC Node" \
     --processes 1 2 4 8 16 32 \
     --repetitions 3
 ```
 
-### 5. Analizar Resultados
+### 5. Analyze results
 
 ```bash
-# Generar datos de ejemplo y gráficas
+# Generate sample data and plots
 python scripts/analyze_results.py --create-sample
 
-# Analizar resultados de benchmark
+# Analyze benchmark results
 python scripts/analyze_results.py --input results/benchmark_results.csv
 
-# Solo gráficas combinadas
+# Combined plots only
 python scripts/analyze_results.py --input results/benchmark_results.csv --plots combined
 ```
 
-## Uso Programático
+## Programmatic usage
 
 ```python
 from modules import ParallelSUMOSimulator, ParallelEmissionProcessor
 
-# Crear simulador
+# Create simulator
 simulator = ParallelSUMOSimulator(
     num_processes=8,
     emission_batch_size=100,
     use_async_processing=True
 )
 
-# Cargar red
+# Load network
 simulator.load_network("networks/rotterdam/rotterdam.net.xml")
 
-# Configurar comando SUMO
+# Configure SUMO command
 sumo_cmd = [
     "sumo",
     "-n", "networks/rotterdam/rotterdam.net.xml",
@@ -206,80 +206,78 @@ sumo_cmd = [
     "--step-length", "1.0"
 ]
 
-# Ejecutar simulación
+# Run simulation
 result = simulator.run_simulation(
     sumo_cmd=sumo_cmd,
     end_time=3600,
     enable_rerouting=True,
-    accident_edges=["edge_123"],  # Opcional
+    accident_edges=["edge_123"],  # Optional
     collect_emissions=True
 )
 
-# Ver resultados
+# View results
 print(f"Speedup: {result.speedup:.2f}x")
 print(f"Total CO2: {result.total_emissions['co2']/1000:.2f} kg")
 ```
 
-## Estructura del Proyecto
+## Project structure
 
 ```
 parallel_sumo_simulation/
 ├── config/
-│   └── settings.py         # Configuración global
+│   └── settings.py         # Global configuration
 ├── modules/
 │   ├── __init__.py
-│   ├── emissions.py        # Cálculo paralelo de emisiones
-│   ├── routing.py          # Cálculo paralelo de rutas (básico)
-│   ├── sumo_routing.py     # Routing mejorado con sumolib
-│   ├── simulation.py       # Simulador principal
-│   └── data_collector.py   # Recolector de datos TraCI
+│   ├── emissions.py        # Parallel emissions computation
+│   ├── routing.py          # Parallel routing (basic)
+│   ├── sumo_routing.py     # Improved routing with sumolib
+│   ├── simulation.py       # Main simulator
+│   └── data_collector.py   # TraCI data collector
 ├── scripts/
-│   ├── run_simulation.py   # Script principal
-│   ├── benchmark.py        # Benchmarking de speedup
-│   ├── analyze_results.py  # Análisis y gráficas
-│   └── generate_demand.py  # Generador de demanda
-├── networks/               # Redes SUMO
-├── results/                # Resultados y gráficas
+│   ├── run_simulation.py   # Main script
+│   ├── benchmark.py        # Speedup benchmarking
+│   ├── analyze_results.py  # Analysis and plots
+│   └── generate_demand.py  # Demand generator
+├── networks/               # SUMO networks
+├── results/                 # Results and plots
 ├── requirements.txt
 └── README.md
 ```
 
-## Formato de Resultados
+## Result format
 
-Los resultados de benchmark se guardan en CSV/Excel con columnas:
+Benchmark results are saved in CSV/Excel with columns:
 
-| Columna | Descripción |
-|---------|-------------|
-| scenario | Red (Almenara, Rotterdam) |
-| machine | Identificador de máquina |
-| processes | Número de procesos paralelos |
-| traffic | Nivel de tráfico (Low/Medium/High) |
-| accidents | Número de accidentes |
-| speedup | Aceleración vs. baseline |
-| total_time | Tiempo total de ejecución |
-| emission_time | Tiempo en cálculo de emisiones |
-| routing_time | Tiempo en cálculo de rutas |
+| Column | Description |
+|--------|-------------|
+| scenario | Network (Almenara, Rotterdam) |
+| machine | Machine identifier |
+| processes | Number of parallel processes |
+| traffic | Traffic level (Low/Medium/High) |
+| accidents | Number of accidents |
+| speedup | Speedup vs. baseline |
+| total_time | Total execution time |
+| emission_time | Time in emissions computation |
+| routing_time | Time in routing computation |
 
-## Optimización del Speedup
+## Speedup optimization
 
-Para maximizar el speedup:
+To maximize speedup:
 
-1. **Batch size adecuado**: 50-200 estados por lote
-2. **Actualización no muy frecuente**: Rutas cada 30-60 segundos
-3. **Procesamiento asíncrono**: Usar `use_async_processing=True`
-4. **Escalar con tráfico**: Más vehículos = más trabajo paralelizable
+1. **Suitable batch size**: 50–200 states per batch
+2. **Not too frequent updates**: Routes every 30–60 seconds
+3. **Asynchronous processing**: Use `use_async_processing=True`
+4. **Scale with traffic**: More vehicles means more parallelizable work
 
-## Limitaciones Conocidas
+## Known limitations
 
-1. **TraCI es secuencial**: El bucle de simulación SUMO no se puede paralelizar
-2. **Overhead de comunicación**: Con pocos vehículos, el overhead supera el beneficio
-3. **Memoria**: Cada proceso necesita copia del grafo de red
-4. **DUAROUTER**: Llamadas externas son lentas (usar solo para validación)
+1. **TraCI is sequential**: The SUMO simulation loop cannot be parallelized
+2. **Communication overhead**: With few vehicles, overhead outweighs the benefit
+3. **Memory**: Each process needs a copy of the network graph
+4. **DUAROUTER**: External calls are slow (use only for validation)
 
-## Referencias
+## References
 
 - [SUMO Documentation](https://sumo.dlr.de/docs/)
 - [TraCI API](https://sumo.dlr.de/docs/TraCI.html)
 - [HBEFA Emission Model](https://www.hbefa.net/)
-
-
