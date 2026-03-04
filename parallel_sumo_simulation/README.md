@@ -68,15 +68,7 @@ The SUMO `.net.xml` file contains:
 1. **Initial**: Free-flow times (`time = length / speed_limit`)
 2. **During simulation**: Update from TraCI with `edge.getTraveltime()`
 3. **Temporal smoothing**: Weighted average of last N values
-
-### Result quality
-
-| Scenario | Precision | Notes |
-|----------|------------|-------|
-| Uncongested network | Excellent | Best case |
-| Light congestion | Good | With TraCI updates |
-| Severe congestion | Fair | Requires frequent rerouting |
-| With accidents | Fair | Depends on detection speed |
+|
 
 ### Routing options
 
@@ -268,13 +260,6 @@ To maximize speedup:
 2. **Not too frequent updates**: Routes every 30–60 seconds
 3. **Asynchronous processing**: Use `use_async_processing=True`
 4. **Scale with traffic**: More vehicles means more parallelizable work
-
-## Known limitations
-
-1. **TraCI is sequential**: The SUMO simulation loop cannot be parallelized
-2. **Communication overhead**: With few vehicles, overhead outweighs the benefit
-3. **Memory**: Each process needs a copy of the network graph
-4. **DUAROUTER**: External calls are slow (use only for validation)
 
 ## References
 
