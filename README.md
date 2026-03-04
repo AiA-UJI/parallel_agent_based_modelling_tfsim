@@ -31,3 +31,16 @@ python scripts/benchmark.py --mode quick
 ```
 
 See `parallel_sumo_simulation/README.md` for detailed documentation when available in your clone.
+
+
+
+# Additional Materials
+
+Some of the files used in this article (such as maps, itineraries, and other supporting materials) are not included in this repository due to their large size.
+
+If you need access to these resources, they can be requested by email:
+
+* [vtomas@uji.es](mailto:vtomas@uji.es)
+* [imonzon@uji.es](mailto:imonzon@uji.es)
+
+The authors will provide the requested files upon demand for academic or research purposes.
