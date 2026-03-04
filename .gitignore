@@ -1,0 +1,47 @@
+# Código fuente subido: solo los .py del framework de simulación paralela SUMO
+# y el script hgv.py. El resto del workspace es local (paper, datos, entornos).
+
+# Entorno virtual Python
+venv/
+.venv/
+env/
+
+# Paper y artefactos LaTeX (el artículo no se versiona en este repo)
+paper.tex
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.fls
+*.fdb_latexmk
+
+# Datos y resultados locales
+csv/
+*.xlsx
+*.xls
+*.xml
+*.xml.gz
+trafficspeed*
+
+# Otros scripts y análisis fuera del scope del paper
+analizadores/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# IDE y sistema
+.idea/
+.DS_Store
+*.swp
+*.swo
