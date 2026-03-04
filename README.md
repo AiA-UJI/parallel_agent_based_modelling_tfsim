@@ -13,7 +13,7 @@ This work addresses task-level parallelization of SUMO (Simulation of Urban MObi
   - Modules: emissions (HBEFA), routing (Dijkstra/A*, SUMO), TraCI simulator with workers.
   - Scripts: run simulations, generate demand, run benchmarks, and analyze results.
 
-Only Python code from this package and `hgv.py` is versioned; the paper, data, and virtual environments are excluded (see `.gitignore`).
+Only Python code from this package and `hgv.py` is versioned; the paper, maps, and virtual environments are excluded (see `.gitignore`).
 
 ## Requirements
 
